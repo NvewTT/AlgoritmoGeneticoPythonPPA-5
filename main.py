@@ -1,3 +1,5 @@
+import random
+
 import numpy as np
 
 from PPA5.AlgortimoGenetico import AG
@@ -62,4 +64,18 @@ def geraFilho(filho,pai1,pai2):
     return filho
 
 
+def mutacao(self,filhos,taxaMutacao):
+    for filho in filhos:
+        chanceAleatoria = random.random()
+        if chanceAleatoria < taxaMutacao:
+            quantidadeGenes = [i for i in range(len(pai1))]
+            gene1Index = random.choice(quantidadeGenes)
+            gene2Index = random.choice(quantidadeGenes)
+            gene1 = filho[gene1Index]
+            gene2 = filho[gene2Index]
+            filho[gene1Index] = gene2
+            filho[gene2Index] = gene1
+    return filhos
+
 print(geraFilho(filho1,pai2,pai1))
+print(mutacao([filho1,np.copy(filho1)],1))
