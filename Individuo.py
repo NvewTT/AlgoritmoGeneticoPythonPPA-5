@@ -7,6 +7,7 @@ class Individuo:
         self.roletaRangeMinimo = 0
         self.roletaRangeMaximo = 0
         self.fitnees = 0
+        self.fitneesPorcentagem = 0
 
     def setGenes(self, genes):
         self.genes = np.copy(genes)
@@ -15,6 +16,8 @@ class Individuo:
         self.roletaRangeMinimo = np.copy(minimo)
         self.roletaRangeMaximo = np.copy(maximo)
 
-    def setFitnees(self,fitnees):
+    def setFitnees(self, fitnees):
         self.fitnees = np.copy(fitnees)
-        print(fitnees)
+
+    def setFitneesPorcentagem(self, fitneesPorcentagem):
+        self.fitneesPorcentagem = np.copy(fitneesPorcentagem)

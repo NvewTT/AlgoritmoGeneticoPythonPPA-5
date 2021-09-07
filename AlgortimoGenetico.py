@@ -1,53 +1,64 @@
+from functools import reduce
+from operator import itemgetter, attrgetter
 import numpy as np
 import random
 from PPA5.Individuo import Individuo
 
 
 class AG:
-    __slots__ = ['taxaMutacao','quantidadeGenes','populacao', 'tamanhoPopulacao', 'matrizDistancia']
+    __slots__ = ['elitismo','taxaMutacao', 'quantidadeGenes', 'populacao', 'tamanhoPopulacao', 'matrizDistancia']
 
-    def __init__(self, tamanhoPopulacao, matrizDistancias,quantidadeGenes,taxaMutacao):
+    def __init__(self, tamanhoPopulacao, matrizDistancias, quantidadeGenes, taxaMutacao, elitismo=True):
         self.tamanhoPopulacao = tamanhoPopulacao
         self.matrizDistancia = matrizDistancias
         self.quantidadeGenes = quantidadeGenes
         self.taxaMutacao = taxaMutacao
+        self.elitismo = elitismo
         self.populacao = []
 
     def iniciaPopulacao(self):
         for i in range(self.tamanhoPopulacao):
-            genesAleatorios = np.random.permutation(16)
+            genesAleatorios = np.random.permutation(self.quantidadeGenes)
             individuo = Individuo()
             individuo.setGenes(genesAleatorios)
             self.populacao.append(individuo)
         self.fitnees(self.populacao)
 
     def fitnees(self, populacao):
+        fitneesTotal = 0
         for individou in populacao:
             fitnees = 0
             for i in range(len(individou.genes)):
                 if i == len(individou.genes) - 1:
                     break
                 fitnees = fitnees + self.distanciaEntreCidades(individou.genes[i], individou.genes[i + 1])
+            fitnees = 1/fitnees
             individou.setFitnees(fitnees)
+            fitneesTotal += fitnees
+        for individou in populacao:
+            individou.setFitneesPorcentagem((individou.fitnees/fitneesTotal))
+        self.geraRangeRoleta(sorted(populacao,key= attrgetter('fitnees')))
+
+
 
     def distanciaEntreCidades(self, cidadeAtual, proximaCidade):
         return self.matrizDistancia[cidadeAtual, proximaCidade]
 
-    def tentePai1(self,filho, contadorfilho, pai1, contadorPai):
+    def tentePai1(self, filho, contadorfilho, pai1, contadorPai):
         if not (pai1[contadorPai] in filho):
             filho[contadorfilho] = pai1[contadorPai]
             return True
         else:
             return False
 
-    def tentePai2(self,filho, contadorfilho, pai2, contadorPai):
+    def tentePai2(self, filho, contadorfilho, pai2, contadorPai):
         if not (pai2[contadorPai] in filho):
             filho[contadorfilho] = pai2[contadorPai]
             return True
         else:
             return False
 
-    def geraFilho(self,filho, pai1, pai2):
+    def geraFilho(self, filho, pai1, pai2):
         cont = 0
         controle = True
         i = 0
@@ -89,5 +100,25 @@ class AG:
                 filho[gene1Index] = gene2
                 filho[gene2Index] = gene1
         return filhos
-    def geraRangeRoleta(self,populacao):
-        pass
+
+    def geraRangeRoleta(self, populacao):
+        rangeDaRoleta = 0
+        for i, individuo in enumerate(populacao):
+            if i == 0:
+                rangeDaRoleta = np.copy(individuo.fitneesPorcentagem)
+                individuo.roletaRangeMinimo = np.copy(0)
+                individuo.roletaRangeMaximo = np.copy(rangeDaRoleta)
+            elif i == self.tamanhoPopulacao - 1:
+                individuo.roletaRangeMinimo = np.copy(rangeDaRoleta)
+                individuo.roletaRangeMaximo = np.copy(1)
+            else:
+                individuo.roletaRangeMinimo = np.copy(rangeDaRoleta)
+                rangeDaRoleta += np.copy(individuo.fitneesPorcentagem)
+                individuo.roletaRangeMaximo = np.copy(rangeDaRoleta)
+        return populacao
+
+    def roleta(self,populacao):
+        novaPopulacao = []
+
+
+
