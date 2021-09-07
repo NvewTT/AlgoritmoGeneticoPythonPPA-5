@@ -4,6 +4,7 @@ import numpy as np
 class Individuo:
     def __init__(self):
         self.genes = np.zeros(16)
+        self.custoCaminho = 0
         self.roletaRangeMinimo = 0
         self.roletaRangeMaximo = 0
         self.fitnees = 0
@@ -18,6 +19,9 @@ class Individuo:
 
     def setFitnees(self, fitnees):
         self.fitnees = np.copy(fitnees)
+
+    def setCustoCaminho(self, custo):
+        self.custoCaminho = np.copy(custo)
 
     def setFitneesPorcentagem(self, fitneesPorcentagem):
         self.fitneesPorcentagem = np.copy(fitneesPorcentagem)
