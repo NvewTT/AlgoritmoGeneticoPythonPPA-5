@@ -1,17 +1,31 @@
-from functools import reduce
-import matplotlib.pyplot as plt
-from itertools import chain
-from operator import itemgetter, attrgetter
-import numpy as np
 import random
+from itertools import chain
+from operator import attrgetter
+
+import matplotlib.pyplot as plt
+import numpy as np
+
 from PPA5.Individuo import Individuo
 
 
 class AG:
-    # __slots__ = ['taxaCruzamento','elitismo','taxaMutacao', 'quantidadeGenes', 'novaPopulacao', 'tamanhoPopulacao', 'matrizDistancia']
+    '''Uma classe que cria roda um Algoritmo genetico
 
-    def __init__(self, tamanhoPopulacao, geracoes, caminhoDistancias, quantidadeGenes, taxaMutacao, taxaCruzamento,
-                 elitismo=True):
+            Args:
+                tamanhoPopulacao (int): Quantidade de individos na populacao
+                geracoes (int): Quantidade de geracoes que o algoritmo deve executar
+                caminhoDistancias (str): Caminho para o arquivo com as distancias das cidades
+                quantidadeGenes (int): Quantidades de genes que o individuo tera
+                taxaCruzamento (float): Chance que um individuo tem de se reproduzir
+                taxaMutacao (float): Chance que um individuo tem de se mutar
+                elitismo (bool): Variavel utilizada para saber se a selecao tera eletismo, por padram é definico que tenha
+
+            Returns:
+                AG: Classe contendo algoritmo genetico
+            '''
+
+    def __init__(self, tamanhoPopulacao: int, geracoes: int, caminhoDistancias: str,
+                 quantidadeGenes: int, taxaCruzamento: float, taxaMutacao: float, elitismo: bool = True):
         self.tamanhoPopulacao = tamanhoPopulacao
         self.geracoes = geracoes
         self.matrizDistancia = np.loadtxt(caminhoDistancias)
@@ -26,6 +40,13 @@ class AG:
         self.mediaPopulacao = []
 
     def iniciaAG(self):
+        '''Função responsavel por executar o algoritmo genetico, e plotar um grafico com historicodos melhores individuos, piores e a media dos individuos
+
+
+                    Returns:
+                        Individuo: Objeto contendo melhor individuo
+                    '''
+
         for i in range(self.geracoes):
             pais = self.fitnees(self.novaPopulacao)
             filhos = self.cruzamento(pais)
@@ -57,6 +78,7 @@ class AG:
         ax1.legend(('Media Global', 'Melhor Individuo', "Pior Individuo"),
                    shadow=True)
         plt.show()
+        return melhorIndividuo
 
     def iniciaPopulacao(self):
         populacao = []

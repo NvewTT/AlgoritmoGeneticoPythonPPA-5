@@ -2,6 +2,11 @@ import numpy as np
 
 
 class Individuo:
+    '''Classe responsavel por guardar informações dos individuos
+
+            Returns:
+                Individuo: Objeto individuo
+            '''
     def __init__(self):
         self.genes = np.zeros(16)
         self.custoCaminho = 0
@@ -9,6 +14,14 @@ class Individuo:
         self.roletaRangeMaximo = 0
         self.fitnees = 0
         self.fitneesPorcentagem = 0
+
+    def __str__(self):
+        '''Função que gera uma string contento a rota e o custo da rota.
+
+                Returns:
+                    str: Vizualização da rota e do custo da mesma
+                '''
+        return f'Rota : {self.genes}, custo da rota: {self.custoCaminho}'
 
     def setGenes(self, genes):
         self.genes = np.copy(genes)
