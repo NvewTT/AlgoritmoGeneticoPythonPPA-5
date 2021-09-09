@@ -4,7 +4,7 @@ from operator import attrgetter
 
 import matplotlib.pyplot as plt
 import numpy as np
-
+plt.style.use('ggplot')
 from PPA5.Individuo import Individuo
 
 
@@ -36,8 +36,11 @@ class AG:
         self.novaPopulacao = self.iniciaPopulacao()
         self.melhorIndividuoFitnees = []
         self.melhoresIndividuos = []
-        self.piorIndividuo = []
-        self.mediaPopulacao = []
+        self.piorIndividuoFitnees = []
+        self.mediaFitneesPopulacao = []
+        self.melhorIndividuoCusto = []
+        self.piorIndividuoCusto = []
+        self.mediaCustoPopulacao = []
 
     def iniciaAG(self):
         '''Função responsavel por executar o algoritmo genetico, e plotar um grafico com historicodos melhores individuos, piores e a media dos individuos
@@ -53,13 +56,20 @@ class AG:
             populacaoDeFilhosComPais = list(chain(pais, filhos))
             populacaoComFitneesRelativo = self.geraFitneesRelativo(populacaoDeFilhosComPais)
             populacaoOrdenadaPeloFitnees = sorted(populacaoComFitneesRelativo, key=attrgetter('fitnees'))
-            self.melhorIndividuoFitnees.append(max(populacaoOrdenadaPeloFitnees, key=attrgetter('fitnees')).fitnees)
-            self.melhoresIndividuos.append(max(populacaoOrdenadaPeloFitnees, key=attrgetter('fitnees')))
-            self.piorIndividuo.append(min(populacaoOrdenadaPeloFitnees, key=attrgetter('fitnees')).fitnees)
-            mediaPopulacao = np.mean([individuo.fitnees for individuo in populacaoOrdenadaPeloFitnees])
-            self.mediaPopulacao.append(mediaPopulacao)
+            melhorIndividuoFitnees = max(populacaoOrdenadaPeloFitnees, key=attrgetter('fitnees'))
+            self.melhorIndividuoFitnees.append(melhorIndividuoFitnees.fitnees)
+            self.melhorIndividuoCusto.append(melhorIndividuoFitnees.custoCaminho)
+            self.melhoresIndividuos.append(melhorIndividuoFitnees)
+            piorIndividuoFitnees = min(populacaoOrdenadaPeloFitnees, key=attrgetter('fitnees'))
+            self.piorIndividuoFitnees.append(piorIndividuoFitnees.fitnees)
+            self.piorIndividuoCusto.append(piorIndividuoFitnees.custoCaminho)
+            mediaFitneesPopulacao = np.mean([individuo.fitnees for individuo in populacaoOrdenadaPeloFitnees])
+            mediaCustoPopulacao = np.mean([individuo.custoCaminho for individuo in populacaoOrdenadaPeloFitnees])
+            self.mediaFitneesPopulacao.append(mediaFitneesPopulacao)
+            self.mediaCustoPopulacao.append(mediaCustoPopulacao)
             print(f'Geracao: {i + 1}')
-            print(f'Media da Populacao: {mediaPopulacao}')
+            print(f'Media fitnees da Populacao: {mediaFitneesPopulacao}'
+                  f' Media custos da populacao: {mediaCustoPopulacao} ')
             self.novaPopulacao = self.selecao(populacaoOrdenadaPeloFitnees)
         melhorIndividuo = max(self.melhoresIndividuos, key=attrgetter('fitnees'))
         menorRota = melhorIndividuo.genes
@@ -67,15 +77,24 @@ class AG:
         print(menorRota)
         print(menorCustoCaminho)
         listaDeGeracoes = np.arange(self.geracoes)
-        fig1, ax1 = plt.subplots()
+        fig1, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 8))
         ax1.grid(True)
-        plt.title('AG')
-        plt.xlabel('Geração')
-        plt.ylabel('Fitnees')
-        ax1.plot(listaDeGeracoes, self.mediaPopulacao, "r",
-                 listaDeGeracoes, self.melhorIndividuoFitnees, "b",
-                 listaDeGeracoes, self.piorIndividuo, "k")
+        ax1.set_xlabel('Gerações')
+        ax1.set_ylabel('Fitnees')
+        ax1.grid(True)
+        ax1.plot(listaDeGeracoes, self.mediaFitneesPopulacao,
+                 listaDeGeracoes, self.melhorIndividuoFitnees,
+                 listaDeGeracoes, self.piorIndividuoFitnees,)
         ax1.legend(('Media Global', 'Melhor Individuo', "Pior Individuo"),
+                   shadow=True)
+        ax2.grid(True)
+        ax2.set_xlabel('Gerações')
+        ax2.set_ylabel('Custo caminho')
+        ax2.grid(True)
+        ax2.plot(listaDeGeracoes, self.mediaCustoPopulacao,
+                 listaDeGeracoes, self.melhorIndividuoCusto,
+                 listaDeGeracoes, self.piorIndividuoCusto)
+        ax2.legend(('Media Global', 'Melhor Individuo', "Pior Individuo"),
                    shadow=True)
         plt.show()
         return melhorIndividuo
@@ -216,7 +235,8 @@ class AG:
                             (chanceAleatoria <= individuo.roletaRangeMaximo):
                         novaPopulacao.append(individuo)
         else:
-            quantidadesDaElite = 5
+            porcentagemDeElite = 0.05
+            quantidadesDaElite = int(np.around(porcentagemDeElite * self.tamanhoPopulacao,decimals=1))
             for i in range(len(populacao) - 1, len(populacao) - (quantidadesDaElite + 1), -1):
                 novaPopulacao.append(populacao[i])
             for i in range(self.tamanhoPopulacao - quantidadesDaElite):
