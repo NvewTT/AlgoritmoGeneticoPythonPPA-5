@@ -1,10 +1,11 @@
 import random
 from itertools import chain
 from operator import attrgetter
-
+from datetime import datetime
 import matplotlib.pyplot as plt
 import numpy as np
-plt.style.use('ggplot')
+#plt.style.use('ggplot')
+plt.ioff() #se vc utiliza pycharme ou spyder deixe essa linha caso contrario pode retirar
 from PPA5.Individuo import Individuo
 
 
@@ -42,12 +43,16 @@ class AG:
         self.piorIndividuoCusto = []
         self.mediaCustoPopulacao = []
 
-    def iniciaAG(self):
-        '''Função responsavel por executar o algoritmo genetico, e plotar um grafico com historicodos melhores individuos, piores e a media dos individuos
+    def iniciaAG(self, debug = True):
+        '''Função responsavel por executar o algoritmo genetico, e salvar o plot de um grafico com historico dos melhores individuos, piores e a media dos individuos
 
+                    Args:
+                        debug (bool): Parametro responsavel por mostrar ou não as informações sobre cada geração, por padrão é True
 
                     Returns:
                         Individuo: Objeto contendo melhor individuo
+
+                        Media: media de custo do caminho da população
                     '''
 
         for i in range(self.geracoes):
@@ -67,37 +72,39 @@ class AG:
             mediaCustoPopulacao = np.mean([individuo.custoCaminho for individuo in populacaoOrdenadaPeloFitnees])
             self.mediaFitneesPopulacao.append(mediaFitneesPopulacao)
             self.mediaCustoPopulacao.append(mediaCustoPopulacao)
-            print(f'Geracao: {i + 1}')
-            print(f'Media fitnees da Populacao: {mediaFitneesPopulacao}'
-                  f' Media custos da populacao: {mediaCustoPopulacao} ')
+            if debug:
+                print(f'Geracao: {i + 1}')
+                print(f'Media fitnees da Populacao: {mediaFitneesPopulacao}'
+                      f' Media custos da populacao: {mediaCustoPopulacao} ')
             self.novaPopulacao = self.selecao(populacaoOrdenadaPeloFitnees)
         melhorIndividuo = max(self.melhoresIndividuos, key=attrgetter('fitnees'))
         menorRota = melhorIndividuo.genes
         menorCustoCaminho = melhorIndividuo.custoCaminho
-        print(menorRota)
-        print(menorCustoCaminho)
-        listaDeGeracoes = np.arange(self.geracoes)
-        fig1, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 8))
-        ax1.grid(True)
-        ax1.set_xlabel('Gerações')
-        ax1.set_ylabel('Fitnees')
-        ax1.grid(True)
-        ax1.plot(listaDeGeracoes, self.mediaFitneesPopulacao,
-                 listaDeGeracoes, self.melhorIndividuoFitnees,
-                 listaDeGeracoes, self.piorIndividuoFitnees,)
-        ax1.legend(('Media Global', 'Melhor Individuo', "Pior Individuo"),
-                   shadow=True)
-        ax2.grid(True)
-        ax2.set_xlabel('Gerações')
-        ax2.set_ylabel('Custo caminho')
-        ax2.grid(True)
-        ax2.plot(listaDeGeracoes, self.mediaCustoPopulacao,
-                 listaDeGeracoes, self.melhorIndividuoCusto,
-                 listaDeGeracoes, self.piorIndividuoCusto)
-        ax2.legend(('Media Global', 'Melhor Individuo', "Pior Individuo"),
-                   shadow=True)
-        plt.show()
-        return melhorIndividuo
+        if debug:
+            listaDeGeracoes = np.arange(self.geracoes)
+            fig1, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 8))
+            ax1.grid(True)
+            ax1.set_xlabel('Gerações')
+            ax1.set_ylabel('Fitnees')
+            ax1.grid(True)
+            ax1.plot(listaDeGeracoes, self.mediaFitneesPopulacao,
+                     listaDeGeracoes, self.melhorIndividuoFitnees,
+                     listaDeGeracoes, self.piorIndividuoFitnees)
+            ax1.legend(('Media Global', 'Melhor Individuo', "Pior Individuo"),
+                       shadow=True)
+            ax2.grid(True)
+            ax2.set_xlabel('Gerações')
+            ax2.set_ylabel('Custo caminho')
+            ax2.grid(True)
+            ax2.plot(listaDeGeracoes, self.mediaCustoPopulacao,
+                     listaDeGeracoes, self.melhorIndividuoCusto,
+                     listaDeGeracoes, self.piorIndividuoCusto)
+            ax2.legend(('Media Global', 'Melhor Individuo', "Pior Individuo"),
+                       shadow=True)
+            plt.savefig(f'Ag_{datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.png')
+
+
+        return melhorIndividuo,self.mediaCustoPopulacao
 
     def iniciaPopulacao(self):
         populacao = []
